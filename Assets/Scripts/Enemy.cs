@@ -1,67 +1,104 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private Animator animator;
     [SerializeField] private GameManager gameManager;
-
-    [Header("Timing Settings")]
     [SerializeField] private float minWaitTime = 1.5f;
     [SerializeField] private float maxWaitTime = 3f;
+    [SerializeField, Range(0f, 1f)] private float fakeAttackChance = 0.25f;
 
-    private float _attackSpeed = 1f;
-    private Coroutine _attackRoutine;
+    [Header("Icons")]
+    [SerializeField] private Image skullIcon;
+    [SerializeField] private Image fakeSkullIcon;
+
+    private bool _isAttacking;
 
     public void BeginAttackCycle()
     {
-        if (_attackRoutine != null)
-            StopCoroutine(_attackRoutine);
-
-        _attackRoutine = StartCoroutine(AttackCycle());
+        StopAllCoroutines();
+        StartCoroutine(AttackCycle());
     }
 
     private IEnumerator AttackCycle()
     {
         yield return new WaitForSeconds(Random.Range(minWaitTime, maxWaitTime));
 
-        animator.speed = _attackSpeed;
-        animator.SetTrigger("Attack");
+        if (Random.value < fakeAttackChance)
+        {
+            yield return StartCoroutine(PlayFakeAttack());
+        }
+        else
+        {
+            ShowAttackWarning(true);
+            gameManager.OnEnemyAttackSignal();
+        }
+    }
 
-        gameManager.OnEnemyAttackStarted();
-
-        yield return new WaitForSeconds(1f / _attackSpeed);
+    private IEnumerator PlayFakeAttack()
+    {
+        ShowFakeWarning(true);
         animator.speed = 1f;
-        animator.SetTrigger("Idle");
+        animator.SetTrigger("FakeAttack");
+
+        yield return new WaitForSeconds(GetCurrentAnimationLength());
+
+        ShowFakeWarning(false);
+        StartIdle();
 
         BeginAttackCycle();
     }
 
+    public void ShowAttackWarning(bool active)
+    {
+        if (skullIcon != null)
+            skullIcon.gameObject.SetActive(active);
+    }
+
+    private void ShowFakeWarning(bool active)
+    {
+        if (fakeSkullIcon != null)
+            fakeSkullIcon.gameObject.SetActive(active);
+    }
+
     public void StartIdle()
     {
-        animator.speed = 1f;
-        animator.SetTrigger("Idle");
+        animator.ResetTrigger("Attack");
+        animator.ResetTrigger("Death");
+        animator.ResetTrigger("FakeAttack");
+        animator.Play("Idle", 0, 0f);
+        ShowAttackWarning(false);
+        ShowFakeWarning(false);
     }
 
     public void PlayAttack()
     {
-        animator.speed = _attackSpeed;
+        animator.speed = 1f;
         animator.SetTrigger("Attack");
+        ShowAttackWarning(false);
+        ShowFakeWarning(false);
     }
 
-    // Returns the duration of the current animation in seconds
+    public void PlayVictory()
+    {
+        animator.speed = 1f;
+        animator.Play("Victory", 0, 0f);
+        ShowAttackWarning(false);
+        ShowFakeWarning(false);
+    }
+
+    public void PlayDeath()
+    {
+        animator.speed = 1f;
+        animator.SetTrigger("Death");
+        ShowAttackWarning(false);
+        ShowFakeWarning(false);
+    }
+
     public float GetCurrentAnimationLength()
     {
         return animator.GetCurrentAnimatorStateInfo(0).length / animator.speed;
-    }
-
-    public void SetAttackSpeed(float speed)
-    {
-        _attackSpeed = speed;
-    }
-
-    public float GetAttackSpeed()
-    {
-        return _attackSpeed;
     }
 }

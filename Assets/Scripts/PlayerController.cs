@@ -8,22 +8,20 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space) && gameManager.IsRoundActive())
-        {
             gameManager.OnPlayerPressedButton();
-        }
     }
 
     public void PlayIdle()
     {
-        animator.SetTrigger("Idle");
+        animator.ResetTrigger("Attack");
+        animator.ResetTrigger("Death");
+        animator.Play("Idle", 0, 0f);
     }
+    public void PlayAttack() => animator.SetTrigger("Attack");
+    public void PlayDeath() => animator.SetTrigger("Death");
 
-    public void PlayAttack()
-    {
-        animator.SetTrigger("Attack");
-    }
+    public void PlayVictory() => animator.Play("Victory", 0, 0f);
 
-    // Returns the duration of the current animation in seconds
     public float GetCurrentAnimationLength()
     {
         return animator.GetCurrentAnimatorStateInfo(0).length / animator.speed;

@@ -1980,7 +1980,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
   m_UiScaleMode: 1
-  m_ReferencePixelsPerUnit: 100
+  m_ReferencePixelsPerUnit: 64
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 960, y: 540}
   m_ScreenMatchMode: 2
@@ -2002,7 +2002,7 @@ Canvas:
   m_RenderMode: 1
   m_Camera: {fileID: 942638447}
   m_PlaneDistance: 100
-  m_PixelPerfect: 0
+  m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -2177,8 +2177,8 @@ MonoBehaviour:
   animator: {fileID: 1917382951}
   gameManager: {fileID: 1561466275}
   minWaitTime: 3
-  maxWaitTime: 12
-  fakeAttackChance: 0.5
+  maxWaitTime: 9
+  fakeAttackChance: 0.33
   skullIcon: {fileID: 907355820}
   attackSfx: {fileID: 8300000, guid: 444152c007e339d49be346b651ddb893, type: 3}
   deathSfx: {fileID: 8300000, guid: 2a11166a453b64a469c946d9c00086d0, type: 3}

@@ -88,6 +88,8 @@ public class GameManager : MonoBehaviour
 
         cameraSwitcher.SwitchToDefault();
         enemy.BeginAttackCycle();
+        
+        Debug.Log($"[ROUND {_currentRound}] Current Reaction Window: {_currentReactionWindow:F2} seconds");
     }
 
     public void OnEnemyAttackSignal()

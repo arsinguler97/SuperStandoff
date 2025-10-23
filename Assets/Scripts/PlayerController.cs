@@ -5,6 +5,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private GameManager gameManager;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip attackSfx;
+    [SerializeField] private AudioClip deathSfx;
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space) && gameManager.IsRoundActive())
@@ -17,8 +21,18 @@ public class PlayerController : MonoBehaviour
         animator.ResetTrigger("Death");
         animator.Play("Idle", 0, 0f);
     }
-    public void PlayAttack() => animator.SetTrigger("Attack");
-    public void PlayDeath() => animator.SetTrigger("Death");
+
+    public void PlayAttack()
+    {
+        animator.SetTrigger("Attack");
+        AudioManager.Instance.PlaySfx(attackSfx);
+    }
+
+    public void PlayDeath()
+    {
+        animator.SetTrigger("Death");
+        AudioManager.Instance.PlaySfx(deathSfx);
+    }
 
     public void PlayVictory() => animator.Play("Victory", 0, 0f);
 

@@ -12,9 +12,11 @@ public class Enemy : MonoBehaviour
 
     [Header("Icons")]
     [SerializeField] private Image skullIcon;
-    [SerializeField] private Image fakeSkullIcon;
 
-    private bool _isAttacking;
+    [Header("Audio")]
+    [SerializeField] private AudioClip attackSfx;
+    [SerializeField] private AudioClip deathSfx;
+    [SerializeField] private AudioClip fakeAttackSfx;
 
     public void BeginAttackCycle()
     {
@@ -39,15 +41,13 @@ public class Enemy : MonoBehaviour
 
     private IEnumerator PlayFakeAttack()
     {
-        ShowFakeWarning(true);
         animator.speed = 1f;
         animator.SetTrigger("FakeAttack");
+        AudioManager.Instance.PlaySfx(fakeAttackSfx);
 
         yield return new WaitForSeconds(GetCurrentAnimationLength());
 
-        ShowFakeWarning(false);
         StartIdle();
-
         BeginAttackCycle();
     }
 
@@ -57,12 +57,6 @@ public class Enemy : MonoBehaviour
             skullIcon.gameObject.SetActive(active);
     }
 
-    private void ShowFakeWarning(bool active)
-    {
-        if (fakeSkullIcon != null)
-            fakeSkullIcon.gameObject.SetActive(active);
-    }
-
     public void StartIdle()
     {
         animator.ResetTrigger("Attack");
@@ -70,15 +64,14 @@ public class Enemy : MonoBehaviour
         animator.ResetTrigger("FakeAttack");
         animator.Play("Idle", 0, 0f);
         ShowAttackWarning(false);
-        ShowFakeWarning(false);
     }
 
     public void PlayAttack()
     {
         animator.speed = 1f;
         animator.SetTrigger("Attack");
+        AudioManager.Instance.PlaySfx(attackSfx);
         ShowAttackWarning(false);
-        ShowFakeWarning(false);
     }
 
     public void PlayVictory()
@@ -86,15 +79,14 @@ public class Enemy : MonoBehaviour
         animator.speed = 1f;
         animator.Play("Victory", 0, 0f);
         ShowAttackWarning(false);
-        ShowFakeWarning(false);
     }
 
     public void PlayDeath()
     {
         animator.speed = 1f;
         animator.SetTrigger("Death");
+        AudioManager.Instance.PlaySfx(deathSfx);
         ShowAttackWarning(false);
-        ShowFakeWarning(false);
     }
 
     public float GetCurrentAnimationLength()

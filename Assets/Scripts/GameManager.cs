@@ -1,21 +1,26 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private PlayerController player;
     [SerializeField] private Enemy enemy;
-    [SerializeField] private TMP_Text resultText;
     [SerializeField] private TMP_Text roundText;
+    [SerializeField] private TMP_Text highScoreText;
     [SerializeField] private CameraSwitcher cameraSwitcher;
     [SerializeField] private Button playAgainButton;
     [SerializeField] private Button nextRoundButton;
+    [SerializeField] private GameObject instructionPanel;
 
     [Header("Settings")]
     [SerializeField] private float baseReactionWindow = 1.5f;
     [SerializeField] private float restartDelayBuffer = 0.2f;
+    [SerializeField] private float instructionDuration = 5f;
+    [SerializeField] private float minReactionWindow = 0.1f;
+    [SerializeField] private float difficultyModifier = 0.1f;
 
     [Header("Teleport Positions")]
     [SerializeField] private float playerZoomX = -0.75f;
@@ -24,6 +29,7 @@ public class GameManager : MonoBehaviour
     private bool _roundActive;
     private bool _canReact;
     private int _currentRound = 1;
+    private int _highScore;
     private float _currentReactionWindow;
 
     private Vector3 _playerDefaultPos;
@@ -37,6 +43,20 @@ public class GameManager : MonoBehaviour
         playAgainButton.gameObject.SetActive(false);
         nextRoundButton.gameObject.SetActive(false);
         enemy.ShowAttackWarning(false);
+
+        UpdateHighScoreText();
+        StartCoroutine(ShowInstructionsThenStart());
+    }
+
+    private IEnumerator ShowInstructionsThenStart()
+    {
+        Time.timeScale = 0f;
+        instructionPanel.SetActive(true);
+
+        yield return new WaitForSecondsRealtime(instructionDuration);
+
+        instructionPanel.SetActive(false);
+        Time.timeScale = 1f;
 
         ResetGame();
     }
@@ -54,8 +74,8 @@ public class GameManager : MonoBehaviour
 
     private void StartRound()
     {
-        resultText.text = "";
         roundText.text = "ROUND " + _currentRound;
+        UpdateHighScoreText();
 
         _roundActive = true;
         _canReact = false;
@@ -67,7 +87,6 @@ public class GameManager : MonoBehaviour
         enemy.transform.position = _enemyDefaultPos;
 
         cameraSwitcher.SwitchToDefault();
-
         enemy.BeginAttackCycle();
     }
 
@@ -108,7 +127,12 @@ public class GameManager : MonoBehaviour
     private void HandleWinScenario()
     {
         _roundActive = false;
-        resultText.text = "YOU WIN!";
+
+        if (_currentRound > _highScore)
+        {
+            _highScore = _currentRound;
+            UpdateHighScoreText();
+        }
 
         TeleportToZoomPositions();
         cameraSwitcher.SwitchToZoom();
@@ -123,7 +147,6 @@ public class GameManager : MonoBehaviour
     private void PlayPlayerVictory()
     {
         player.PlayVictory();
-
         float victoryLength = player.GetCurrentAnimationLength();
         Invoke(nameof(ShowNextRoundButton), victoryLength + restartDelayBuffer);
     }
@@ -131,13 +154,11 @@ public class GameManager : MonoBehaviour
     private void HandleDeathScenario()
     {
         _roundActive = false;
-        resultText.text = "YOU DIED";
 
         TeleportToZoomPositions();
         cameraSwitcher.SwitchToZoom();
 
         enemy.PlayAttack();
-
         float attackLength = enemy.GetCurrentAnimationLength();
         Invoke(nameof(PlayEnemyVictory), attackLength);
     }
@@ -146,7 +167,6 @@ public class GameManager : MonoBehaviour
     {
         enemy.PlayVictory();
         player.PlayDeath();
-
         float victoryLength = enemy.GetCurrentAnimationLength();
         Invoke(nameof(ShowPlayAgainButton), victoryLength + restartDelayBuffer);
     }
@@ -160,6 +180,9 @@ public class GameManager : MonoBehaviour
     {
         nextRoundButton.gameObject.SetActive(false);
         _currentRound++;
+
+        _currentReactionWindow = Mathf.Max(minReactionWindow, baseReactionWindow - (_currentRound - 1) * difficultyModifier);
+
         StartRound();
     }
 
@@ -167,6 +190,12 @@ public class GameManager : MonoBehaviour
     {
         player.transform.position = new Vector3(playerZoomX, player.transform.position.y, player.transform.position.z);
         enemy.transform.position = new Vector3(enemyZoomX, enemy.transform.position.y, enemy.transform.position.z);
+    }
+
+    private void UpdateHighScoreText()
+    {
+        if (highScoreText != null)
+            highScoreText.text = "High Score: " + _highScore;
     }
 
     public bool IsRoundActive() => _roundActive;
